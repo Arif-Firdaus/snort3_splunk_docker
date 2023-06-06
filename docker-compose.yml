@@ -1,0 +1,41 @@
+version: "3.6"
+
+networks:
+  splunknet:
+    driver: bridge
+    attachable: true
+
+volumes:
+  splunk-node-var:
+  splunk-node-etc:
+
+services:
+
+  snort_node:
+    container_name: snort_node
+    image: arifirdaus/snort
+    restart: always
+    stdin_open: true
+    volumes:
+      - ./log:/var/log/snort
+
+  splunk_node:
+    container_name: splunk_node
+    networks:
+      splunknet:
+        aliases:
+          - splunk_node
+    image: arifirdaus/splunk_test
+    restart: always
+    ports:
+      - 8000:8000
+      - 8089:8089
+    environment:
+      - SPLUNK_START_ARGS=--accept-license
+      - SPLUNK_PASSWORD=xT7*6^Nf
+    volumes:
+      - ./log:/var/log/snort/
+      - splunk-node-var:/opt/splunk/var
+      - splunk-node-etc:/opt/splunk/etc
+    depends_on:
+      - snort_node
